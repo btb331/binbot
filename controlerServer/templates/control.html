@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        function load() {
+            el = document.getElementById("vid")
+            host = document.location.host
+            hostSplit = host.split(".")
+            if (hostSplit[0] == "192" || hostSplit[0] == "127") {
+                el.src = "http://192.168.1.139:8000/stream.mjpg"
+            } else {
+                el.src = "https://cambot.benselectricalescapades.co.uk/stream.mjpg"
+            }
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directional Buttons</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button {
+            width: 100px;
+            height: 50px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        img {
+            object-fit: contain;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body onload="load()">
+    <div class="control-panel">
+        <h1>Control Panel</h1>
+        <div class="button-container">
+            <button onclick="makeRequest('forward', 0, false)">Forward</button>
+            <button onclick="makeRequest('left', 0, true)">Pivot Left</button>
+            <button onclick="makeRequest('left', 0, false)">Turn Left</button>
+            <button onclick="makeRequest('right', 0, true)">Pivot Right</button>
+            <button onclick="makeRequest('right', 0, false)">Turn Right</button>
+            <button onclick="makeRequest('backward', 0, false)">Backward</button>
+            <button onclick="makeRequest('stop', 0, false)">Stop</button>
+        </div>
+        <div class="button-container">
+            Step:
+            <button onclick="stepChange(false, 10)" style="height: 30px;width: 40px;">-10</button>
+            <button onclick="stepChange(false, 1)" style="height: 30px;width: 40px;">-1</button>
+            <span id="step"> 5 </span>
+            <button onclick="stepChange(true, 1)" style="height: 30px;width: 40px;">+1</button>
+            <button onclick="stepChange(true, 10)" style="height: 30px;width: 40px;">+10</button>
+        </div>
+        <div class="button-container">
+            <button onclick="makeRequest('forward', true)">Forward step</button>
+            <button onclick="makeRequest('left', true, true)">Pivot Left step</button>
+            <button onclick="makeRequest('left', true, false)">Turn Left step</button>
+            <button onclick="makeRequest('right', true, true)">Pivot Right step</button>
+            <button onclick="makeRequest('right', true, false)">Turn Right step</button>
+            <button onclick="makeRequest('backward', true)">Backward step</button>
+            <button onclick="makeRequest('stop', false)">Stop</button>
+        </div>
+        <div class="video-container">
+            <img alt="Video Stream" id="vid">
+        </div>
+    </div>
+
+    <script>
+        function makeRequest(direction, step, pivot = true) {
+            if (step) {
+                span = document.getElementById("step")
+                step = parseInt(span.innerHTML)
+            } else {
+                step = 0
+            }
+            var loc = window.location.href;
+            url = `${loc}${direction}?`
+            if (step) {
+                url = url + "step=" + step + "&"
+            }
+            url = url + "pivot=" + pivot
+
+            console.log(url)
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    console.log(`${direction} request sent successfully`);
+                })
+                .catch(error => console.error(`There was a problem with the fetch operation:`, error));
+        }
+
+        function stepChange(increase, increment) {
+            span = document.getElementById("step")
+            current = parseInt(span.innerHTML)
+            if (increase) {
+                newValue = current + increment
+            }
+            else {
+                newValue = current - increment
+            }
+            if (newValue < 1) {
+                newValue = 1
+            }
+            span.innerHTML = newValue
+        }
+    </script>
+</body>
+
+</html>
